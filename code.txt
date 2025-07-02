@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBuc - Your Gateway to Growth and Investment</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the purple theme and font */
+        :root {
+            --primary-purple: #8A2BE2; /* Blue Violet */
+            --light-purple: #C3A3F9;
+            --dark-purple: #5A1F9D;
+            --text-color: #333;
+            --white-text: #FFFFFF;
+            --gray-bg: #F3F4F6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Hide scrollbar on body */
+        }
+
+        /* Main app container to simulate a mobile screen */
+        .app-container {
+            width: 100%;
+            max-width: 420px; /* Typical smartphone width */
+            height: 100vh; /* Full viewport height */
+            max-height: 800px; /* Max height for larger screens */
+            background-color: var(--white-text);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Screen containers for different app views */
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translateX(100%); /* Off-screen to the right by default */
+            opacity: 0;
+            background-color: var(--white-text);
+            overflow-y: auto; /* Enable scrolling for content */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
+        .screen.active {
+            transform: translateX(0);
+            opacity: 1;
+            position: relative; /* Bring active screen into flow */
+        }
+
+        /* Specific splash screen styling */
+        #splash-screen {
+            background: linear-gradient(135deg, var(--primary-purple), var(--dark-purple));
+            color: var(--white-text);
+            transform: translateX(0); /* Splash screen starts active */
+            opacity: 1;
+            z-index: 100; /* Ensure it's on top */
+        }
+
+        /* Header styling for screens */
+        .screen-header {
+            width: 100%;
+            padding: 16px 20px;
+            background-color: var(--primary-purple);
+            color: var(--white-text);
+            font-weight: 600;
+            font-size: 1.25rem; /* text-xl */
+            text-align: center;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Content area for screens */
+        .screen-content {
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Form elements styling */
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #D1D5DB; /* gray-300 */
+            border-radius: 10px;
+            font-size: 1rem;
+            color: var(--text-color);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: var(--primary-purple);
+        }
+
+        /* Button styling */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-purple);
+            color: var(--white-text);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.125rem; /* text-lg */
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: var(--dark-purple);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--white-text);
+            color: var(--primary-purple);
+            border: 2px solid var(--primary-purple);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.125rem; /* text-lg */
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+            margin-bottom: 15px;
+        }
+        .btn-secondary:hover {
+            background-color: var(--primary-purple);
+            color: var(--white-text);
+            transform: translateY(-1px);
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            background-color: var(--white-text);
+            border-top: 1px solid #E5E7EB; /* gray-200 */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            bottom: 0;
+            z-index: 20;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6B7280; /* gray-500 */
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: var(--primary-purple);
+            background-color: #F0E6FA; /* A very light purple */
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Utility classes for text and links */
+        .text-purple-600 { color: var(--primary-purple); }
+        .text-gray-500 { color: #6B7280; }
+        .text-sm { font-size: 0.875rem; }
+        .text-center { text-align: center; }
+        .font-semibold { font-weight: 600; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .space-y-4 > *:not(:last-child) { margin-bottom: 1rem; }
+
+        /* Icon styling for home screen cards */
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light-purple);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .icon-circle svg {
+            color: var(--primary-purple);
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Card styling for explore/home sections */
+        .business-card {
+            background-color: var(--white-text);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 350px;
+            border: 1px solid #E5E7EB;
+        }
+
+        /* Placeholder for file upload */
+        .file-upload-placeholder {
+            width: 100%;
+            padding: 20px;
+            border: 2px dashed #D1D5DB;
+            border-radius: 10px;
+            text-align: center;
+            color: #6B7280;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        .file-upload-placeholder:hover {
+            border-color: var(--primary-purple);
+            background-color: #F9FAFB;
+        }
+
+        /* Premium card styling */
+        .premium-card {
+            background-color: var(--white-text);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 350px;
+            border: 2px solid var(--light-purple);
+            text-align: center;
+        }
+        .premium-card.featured {
+            border-color: var(--primary-purple);
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.2);
+        }
+        .premium-card h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+            margin-bottom: 10px;
+        }
+        .premium-card .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-purple);
+            margin-bottom: 15px;
+        }
+        .premium-card ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .premium-card ul li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+        .premium-card ul li svg {
+            width: 20px;
+            height: 20px;
+            color: green;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Splash Screen -->
+        <div id="splash-screen" class="screen active">
+            <div class="flex flex-col items-center justify-center h-full">
+                <h1 class="text-5xl font-bold mb-4">QuickBuc</h1>
+                <p class="text-lg font-medium">Your Gateway to Growth and Investment</p>
+                <div class="mt-8">
+                    <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome / Sign-Up Screen -->
+        <div id="welcome-screen" class="screen">
+            <div class="screen-content">
+                <h2 class="text-3xl font-bold text-center text-purple-600 mb-8">Welcome to QuickBuc</h2>
+                <p class="text-xl text-center text-gray-700 mb-10">Tell us, how do you want to grow today?</p>
+                <button class="btn-primary" onclick="showScreen('signup-business-screen')">I am a Business</button>
+                <button class="btn-secondary" onclick="showScreen('signup-investor-screen')">I am an Investor</button>
+                <p class="text-sm text-gray-500 mt-6">Already have an account? <a href="#" class="text-purple-600 font-semibold" onclick="showScreen('login-screen')">Sign In</a></p>
+            </div>
+        </div>
+
+        <!-- Sign-Up for Business Screen -->
+        <div id="signup-business-screen" class="screen">
+            <div class="screen-header">Register Your Business</div>
+            <div class="screen-content">
+                <input type="text" placeholder="Full Name" class="input-field">
+                <input type="email" placeholder="Email Address" class="input-field">
+                <input type="password" placeholder="Password" class="input-field">
+                <input type="password" placeholder="Confirm Password" class="input-field">
+                <input type="tel" placeholder="Phone Number (+263...)" class="input-field">
+                <input type="text" placeholder="Business Name" class="input-field">
+                <select class="input-field">
+                    <option value="">Select Business Industry</option>
+                    <option value="retail">Retail</option>
+                    <option value="tech">Tech</option>
+                    <option value="agriculture">Agriculture</option>
+                    <option value="services">Services</option>
+                    <option value="manufacturing">Manufacturing</option>
+                    <option value="tourism">Tourism</option>
+                </select>
+                <textarea placeholder="Brief Business Description" class="input-field h-24 resize-none"></textarea>
+                <div class="flex items-center mb-4 w-full">
+                    <input type="checkbox" id="terms-business" class="mr-2 rounded text-purple-600 focus:ring-purple-500">
+                    <label for="terms-business" class="text-sm text-gray-700">I agree to QuickBuc's <a href="#" class="text-purple-600 font-semibold">Terms & Conditions</a> and <a href="#" class="text-purple-600 font-semibold">Privacy Policy</a>.</label>
+                </div>
+                <button class="btn-primary" onclick="showScreen('verify-business-screen')">Next: Verify My Business</button>
+            </div>
+        </div>
+
+        <!-- Verification for Business Screen -->
+        <div id="verify-business-screen" class="screen">
+            <div class="screen-header">Verify Your Identity & Business</div>
+            <div class="screen-content">
+                <p class="text-sm text-center text-gray-600 mb-6">Please provide the following documents to ensure a secure platform for all users and to comply with Zimbabwean financial regulations. This information is vital for identity verification and necessary legal processes, including potential debt collection, and will be handled in accordance with the ZIMCYBER Law.</p>
+
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Government-Issued ID (Front & Back)</p>
+                    <p class="text-xs">(e.g., National ID Card / Zimbabwean Passport)</p>
+                    <input type="file" accept="image/*" class="hidden">
+                </div>
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Business Registration Certificate</p>
+                    <p class="text-xs">(e.g., Certificate of Incorporation, CR6, CR14/CR28)</p>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" class="hidden">
+                </div>
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Proof of Address</p>
+                    <p class="text-xs">(e.g., utility bill not older than 3 months, OR Residence Affidavit (VR9 Form))</p>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" class="hidden">
+                </div>
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Tax Clearance Certificate (Optional)</p>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" class="hidden">
+                </div>
+                <input type="text" placeholder="Bank Name (for receiving funds)" class="input-field">
+                <input type="text" placeholder="Account Name (for receiving funds)" class="input-field">
+                <input type="text" placeholder="Account Number (for receiving funds)" class="input-field">
+
+                <button class="btn-primary" onclick="showScreen('verification-pending-screen')">Submit for Review</button>
+                <p class="text-xs text-center text-gray-500 mt-4">Verification typically takes 24-48 hours. You will be notified via email. Your data is protected under the Cyber and Data Protection Act (ZIMCYBER Law).</p>
+            </div>
+        </div>
+
+        <!-- Sign-Up for Investor Screen -->
+        <div id="signup-investor-screen" class="screen">
+            <div class="screen-header">Become an Investor</div>
+            <div class="screen-content">
+                <input type="text" placeholder="Full Name" class="input-field">
+                <input type="email" placeholder="Email Address" class="input-field">
+                <input type="password" placeholder="Password" class="input-field">
+                <input type="password" placeholder="Confirm Password" class="input-field">
+                <input type="tel" placeholder="Phone Number (+263...)" class="input-field">
+                <div class="flex items-center mb-4 w-full">
+                    <input type="checkbox" id="terms-investor" class="mr-2 rounded text-purple-600 focus:ring-purple-500">
+                    <label for="terms-investor" class="text-sm text-gray-700">I agree to QuickBuc's <a href="#" class="text-purple-600 font-semibold">Terms & Conditions</a> and <a href="#" class="text-purple-600 font-semibold">Privacy Policy</a>.</label>
+                </div>
+                <button class="btn-primary" onclick="showScreen('verify-investor-screen')">Next: Verify My Identity</button>
+            </div>
+        </div>
+
+        <!-- Verification for Investor Screen -->
+        <div id="verify-investor-screen" class="screen">
+            <div class="screen-header">Verify Your Identity</div>
+            <div class="screen-content">
+                <p class="text-sm text-center text-gray-600 mb-6">To ensure a secure and trustworthy platform, and to comply with Zimbabwean regulations, please provide the following. Your data is protected under the Cyber and Data Protection Act (ZIMCYBER Law).</p>
+
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Government-Issued ID (Front & Back)</p>
+                    <p class="text-xs">(e.g., National ID Card / Zimbabwean Passport)</p>
+                    <input type="file" accept="image/*" class="hidden">
+                </div>
+                <div class="file-upload-placeholder">
+                    <p class="font-semibold mb-2">Upload Proof of Address</p>
+                    <p class="text-xs">(e.g., utility bill not older than 3 months, OR Residence Affidavit (VR9 Form))</p>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" class="hidden">
+                </div>
+                <input type="text" placeholder="Bank Name (for sending funds)" class="input-field">
+                <input type="text" placeholder="Account Name (for sending funds)" class="input-field">
+                <input type="text" placeholder="Account Number (for sending funds)" class="input-field">
+
+                <button class="btn-primary" onclick="showScreen('verification-pending-screen')">Submit for Review</button>
+                <p class="text-xs text-center text-gray-500 mt-4">Verification typically takes 24-48 hours. You will be notified via email.</p>
+            </div>
+        </div>
+
+        <!-- Verification Pending Screen -->
+        <div id="verification-pending-screen" class="screen">
+            <div class="screen-content">
+                <svg class="w-20 h-20 text-purple-600 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h2 class="text-2xl font-bold text-center text-purple-600 mb-4">Verification Submitted!</h2>
+                <p class="text-lg text-center text-gray-700 mb-8">Thank you for submitting your documents. Your verification is currently under review and typically takes 24-48 hours. We will notify you via email once the process is complete.</p>
+                <button class="btn-primary" onclick="showScreen('login-screen')">Back to Login</button>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="screen-header">Welcome Back!</div>
+            <div class="screen-content">
+                <input type="email" placeholder="Email Address" class="input-field">
+                <input type="password" placeholder="Password" class="input-field">
+                <div class="flex items-center mb-4 w-full">
+                    <input type="checkbox" id="remember-me" class="mr-2 rounded text-purple-600 focus:ring-purple-500">
+                    <label for="remember-me" class="text-sm text-gray-700">Remember Me</label>
+                </div>
+                <button class="btn-primary" onclick="showDashboard()">Sign In</button>
+                <a href="#" class="text-sm text-purple-600 font-semibold mt-4">Forgot Password?</a>
+                <p class="text-sm text-gray-500 mt-6">Don't have an account? <a href="#" class="text-purple-600 font-semibold" onclick="showScreen('welcome-screen')">Sign Up</a></p>
+            </div>
+        </div>
+
+        <!-- Premium Features Screen -->
+        <div id="premium-features-screen" class="screen">
+            <div class="screen-header">Premium Features</div>
+            <div class="screen-content">
+                <h2 class="text-2xl font-bold text-center text-purple-600 mb-6">Unlock More with Premium!</h2>
+                <p class="text-md text-center text-gray-700 mb-8">Upgrade your experience with exclusive tools and insights.</p>
+
+                <div class="premium-card">
+                    <h4>Basic Plan</h4>
+                    <p class="price">$5<span class="text-sm font-normal text-gray-500">/month</span></p>
+                    <ul>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Advanced Credit Monitoring</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Basic Financial Coaching</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Priority Support</li>
+                    </ul>
+                    <button class="btn-primary">Subscribe Basic</button>
+                </div>
+
+                <div class="premium-card featured">
+                    <h4>Pro Plan</h4>
+                    <p class="price">$15<span class="text-sm font-normal text-gray-500">/month</span></p>
+                    <ul>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>All Basic Features</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Personalized Financial Coaching</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Advanced Analytics & Insights</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Early Access to New Features</li>
+                    </ul>
+                    <button class="btn-primary">Subscribe Pro</button>
+                </div>
+
+                <p class="text-sm text-center text-gray-500 mt-4">Your subscription directly supports the platform's development and security, ensuring a robust and reliable service for all users.</p>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Screen (hidden by default, shown after login) -->
+        <div id="dashboard-screen" class="screen hidden">
+            <!-- Content will be dynamically loaded here based on nav selection -->
+            <div id="dashboard-content" class="flex-grow w-full overflow-y-auto pb-20">
+                <!-- Home content will be here -->
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="bottom-nav">
+                <div class="nav-item active" data-target="home">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l7 7m-1 1V10a1 1 0 00-1-1h-3m-6 9v-4a1 1 0 011-1h2a1 1 0 011 1v4m-6 0h6"></path>
+                    </svg>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" data-target="explore">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span>Explore</span>
+                </div>
+                <div class="nav-item" data-target="messages">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span>Messages</span>
+                </div>
+                <div class="nav-item" data-target="transactions">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Wallet</span>
+                </div>
+                <div class="nav-item" data-target="profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span>Profile</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for screen navigation and dynamic content loading
+
+        const appContainer = document.querySelector('.app-container');
+        const screens = document.querySelectorAll('.screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        // Function to show a specific screen
+        function showScreen(id) {
+            screens.forEach(screen => {
+                screen.classList.remove('active');
+                if (screen.id !== id) {
+                    screen.style.transform = 'translateX(100%)'; // Move non-active screens off-screen
+                    screen.style.opacity = '0';
+                    screen.classList.add('hidden'); // Hide completely
+                }
+            });
+            const targetScreen = document.getElementById(id);
+            if (targetScreen) {
+                targetScreen.classList.remove('hidden'); // Show before animating
+                setTimeout(() => {
+                    targetScreen.classList.add('active');
+                    targetScreen.style.transform = 'translateX(0)';
+                    targetScreen.style.opacity = '1';
+                }, 10); // Small delay for transition to apply
+            }
+        }
+
+        // Simulate splash screen duration and transition to welcome screen
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                showScreen('welcome-screen');
+            }, 2000); // 2 seconds for splash screen
+        });
+
+        // Function to show the dashboard and load default home content
+        function showDashboard() {
+            // Hide all other screens
+            screens.forEach(screen => {
+                screen.classList.remove('active');
+                screen.classList.add('hidden');
+                screen.style.transform = 'translateX(100%)';
+                screen.style.opacity = '0';
+            });
+
+            // Show the dashboard screen
+            dashboardScreen.classList.remove('hidden');
+            setTimeout(() => {
+                dashboardScreen.classList.add('active');
+                dashboardScreen.style.transform = 'translateX(0)';
+                dashboardScreen.style.opacity = '1';
+                loadDashboardContent('home'); // Load home content by default
+            }, 10); // Small delay for transition
+        }
+
+        // Function to load content into the dashboard based on nav item clicked
+        function loadDashboardContent(section) {
+            let content = '';
+            let headerText = '';
+
+            // Reset active state for nav items
+            navItems.forEach(item => item.classList.remove('active'));
+            // Set active state for the clicked nav item
+            document.querySelector(`.nav-item[data-target="${section}"]`).classList.add('active');
+
+            switch (section) {
+                case 'home':
+                    headerText = 'Discover New Opportunities';
+                    content = `
+                        <div class="p-5 flex flex-col items-center w-full">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Trending Businesses</h3>
+                            <div class="business-card">
+                                <div class="icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-4a1 1 0 011-1h2a1 1 0 011 1v4m-6 0h6"></path></svg></div>
+                                <h4 class="font-semibold text-lg text-purple-600">Local Groceries Supply</h4>
+                                <p class="text-sm text-gray-600 mb-2">Industry: Retail</p>
+                                <p class="text-sm text-gray-600 mb-2">Amount Requested: $5,000</p>
+                                <p class="text-xs text-gray-500 mb-4">Expanding fresh produce delivery to urban areas.</p>
+                                <button class="btn-primary py-2 px-4 text-sm w-full">View Details</button>
+                            </div>
+                            <div class="business-card">
+                                <div class="icon-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-1-3m-6.938-9h1.375c.621 0 1.125.504 1.125 1.125v1.25m-3.125-.125h3.125M12 10.5V15m-1-1v4h2v-4m-7 0h7.5v3h-7.5V14z"></path></svg></div>
+                                <h4 class="font-semibold text-lg text-purple-600">Tech Skills Training Hub</h4>
+                                <p class="text-sm text-gray-600 mb-2">Industry: Education/Tech</p>
+                                <p class="text-sm text-gray-600 mb-2">Amount Requested: $12,000</p>
+                                <p class="text-xs text-gray-500 mb-4">Empowering youth with coding and digital marketing skills.</p>
+                                <button class="btn-primary py-2 px-4 text-sm w-full">View Details</button>
+                            </div>
+                            <button class="btn-secondary mt-4 py-2 px-4 text-sm w-full max-w-xs">Create New Proposal</button>
+                            <h3 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Investor Insights</h3>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-md text-purple-600">Understanding Risk vs. Reward</h4>
+                                <p class="text-xs text-gray-500 mt-2">Learn how to balance potential returns with investment risks.</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'explore':
+                    headerText = 'Explore Businesses';
+                    content = `
+                        <div class="p-5 flex flex-col items-center w-full">
+                            <input type="text" placeholder="Search for businesses..." class="input-field mb-4">
+                            <select class="input-field mb-4">
+                                <option value="">Filter by Industry</option>
+                                <option value="retail">Retail</option>
+                                <option value="tech">Tech</option>
+                                <option value="agriculture">Agriculture</option>
+                                <option value="services">Services</option>
+                            </select>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-lg text-purple-600">Eco-Tourism Lodge Expansion</h4>
+                                <p class="text-sm text-gray-600 mb-2">Industry: Tourism</p>
+                                <p class="text-sm text-gray-600 mb-2">Amount: $25,000 | Return: 15% | Period: 18 months</p>
+                                <p class="text-xs text-gray-500 mb-4">Expanding sustainable tourism in Victoria Falls region.</p>
+                                <button class="btn-primary py-2 px-4 text-sm w-full">Learn More</button>
+                            </div>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-lg text-purple-600">Artisan Craft Export Initiative</h4>
+                                <p class="text-sm text-gray-600 mb-2">Industry: Manufacturing</p>
+                                <p class="text-sm text-gray-600 mb-2">Amount: $8,000 | Return: 10% | Period: 12 months</p>
+                                <p class="text-xs text-gray-500 mb-4">Bringing Zimbabwean crafts to international markets.</p>
+                                <button class="btn-primary py-2 px-4 text-sm w-full">Learn More</button>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Partnership Opportunities</h3>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-md text-purple-600">Business Development Services</h4>
+                                <p class="text-xs text-gray-500 mt-2">Access discounted consulting for your business growth.</p>
+                                <button class="btn-secondary py-2 px-4 text-sm mt-4 w-full">Learn More</button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'messages':
+                    headerText = 'Your Conversations';
+                    content = `
+                        <div class="p-5 flex flex-col items-center w-full">
+                            <div class="business-card flex items-center mb-4">
+                                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-gray-600 font-bold text-xl">B1</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-md text-purple-600">Business Name One</h4>
+                                    <p class="text-xs text-gray-500">Last message preview...</p>
+                                </div>
+                                <span class="ml-auto text-xs text-gray-400">10:30 AM</span>
+                            </div>
+                            <div class="business-card flex items-center">
+                                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-gray-600 font-bold text-xl">I1</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-md text-purple-600">Investor Name Two</h4>
+                                    <p class="text-xs text-gray-500">Okay, let's discuss terms.</p>
+                                </div>
+                                <span class="ml-auto text-xs text-gray-400">Yesterday</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-8">Start a new conversation by viewing a business profile.</p>
+                        </div>
+                    `;
+                    break;
+                case 'transactions':
+                    headerText = 'Transactions & Wallet';
+                    content = `
+                        <div class="p-5 flex flex-col items-center w-full">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">My Investments</h3>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-md text-purple-600">Investment in Local Groceries</h4>
+                                <p class="text-sm text-gray-600 mb-2">Amount: $5,000 | Status: Active</p>
+                                <p class="text-xs text-gray-500">Expected Return: $5,750 by Dec 2025</p>
+                            </div>
+                            <div class="business-card">
+                                <h4 class="font-semibold text-md text-purple-600">Investment in Tech Training</h4>
+                                <p class="text-sm text-gray-600 mb-2">Amount: $12,000 | Status: Repaying</p>
+                                <p class="text-xs text-gray-500">Next Repayment: $1,200 on July 15, 2025</p>
+                            </div>
+                            <button class="btn-primary mt-6 py-2 px-4 text-sm w-full max-w-xs" onclick="showScreen('secure-transfer-screen')">Make a Payment</button>
+                            <button class="btn-secondary mt-4 py-2 px-4 text-sm w-full max-w-xs">Manage Linked Accounts</button>
+                        </div>
+                    `;
+                    break;
+                case 'profile':
+                    headerText = 'My Profile';
+                    content = `
+                        <div class="p-5 flex flex-col items-center w-full">
+                            <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-purple-600 mb-2">John Doe</h3>
+                            <p class="text-sm text-gray-600 mb-1">john.doe@example.com</p>
+                            <p class="text-sm text-gray-600 mb-4">+263 771 234 567</p>
+                            <p class="text-md font-medium text-gray-700 mb-6">Account Type: Investor</p>
+
+                            <button class="btn-secondary py-2 px-4 text-sm w-full max-w-xs mb-4">Edit Profile</button>
+                            <button class="btn-secondary py-2 px-4 text-sm w-full max-w-xs mb-4">Security Settings</button>
+                            <button class="btn-secondary py-2 px-4 text-sm w-full max-w-xs mb-4" onclick="showScreen('premium-features-screen')">Premium Features</button>
+                            <button class="btn-secondary py-2 px-4 text-sm w-full max-w-xs mb-4">Help & Support</button>
+                            <a href="#" class="text-sm text-purple-600 font-semibold mt-4">Terms & Conditions / Privacy Policy</a>
+                            <button class="btn-primary mt-8 py-2 px-4 text-sm w-full max-w-xs" onclick="showScreen('login-screen')">Log Out</button>
+                        </div>
+                    `;
+                    break;
+                default:
+                    content = '<p class="text-center text-gray-500">Content not found.</p>';
+                    break;
+            }
+
+            // Update dashboard content and header
+            dashboardContent.innerHTML = `
+                <div class="screen-header">${headerText}</div>
+                ${content}
+            `;
+        }
+
+        // Secure Fund Transfer Screen (New for monetization note)
+        // This screen is not part of the bottom nav, but accessed from Transactions
+        const secureTransferScreen = `
+            <div id="secure-transfer-screen" class="screen">
+                <div class="screen-header">Secure Fund Transfer</div>
+                <div class="screen-content">
+                    <p class="text-sm text-center text-gray-600 mb-6">Please review details. Funds will be transferred via <strong>Bank Transfer (e.g., RTGS/Zipit)</strong> using the securely exchanged details.</p>
+
+                    <input type="text" placeholder="Amount" class="input-field" value="$5,000" readonly>
+                    <input type="text" placeholder="Recipient Name" class="input-field" value="Local Groceries Supply" readonly>
+                    <input type="text" placeholder="Recipient Bank Name" class="input-field" value="ZB Bank" readonly>
+                    <input type="text" placeholder="Recipient Account Number" class="input-field" value="9012345678901" readonly>
+                    <input type="text" placeholder="Reference/Purpose of Transfer" class="input-field" value="QuickBuc Loan for Local Groceries" readonly>
+
+                    <p class="text-xs text-center text-gray-500 mt-4 mb-4"><strong>QuickBuc facilitates the secure exchange of banking details only and does not handle or hold any funds directly.</strong> Transactions occur directly between your linked bank accounts. Always verify all details before confirming to prevent errors.</p>
+                    <p class="text-xs text-center text-purple-600 font-semibold mb-6">A small platform fee (e.g., 1-2% of interest earned for investors, or a transparent origination fee for businesses) helps us maintain and secure QuickBuc.</p>
+
+                    <button class="btn-primary" onclick="alert('Simulating fund transfer... funds would be transferred via your bank.')">Confirm & Proceed with Transfer</button>
+                    <button class="btn-secondary" onclick="showDashboard(); loadDashboardContent('transactions');">Cancel</button>
+                </div>
+            </div>
+        `;
+        appContainer.insertAdjacentHTML('beforeend', secureTransferScreen); // Add the screen to the DOM
+
+        // Add event listeners for bottom navigation
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.dataset.target;
+                loadDashboardContent(target);
+            });
+        });
+
+        // Event listener for file upload placeholders
+        document.querySelectorAll('.file-upload-placeholder').forEach(placeholder => {
+            placeholder.addEventListener('click', () => {
+                placeholder.querySelector('input[type="file"]').click();
+            });
+            placeholder.querySelector('input[type="file"]').addEventListener('change', (event) => {
+                const fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
+                placeholder.querySelector('p:first-child').textContent = `File Selected: ${fileName}`;
+                placeholder.style.borderColor = 'var(--primary-purple)';
+                placeholder.style.backgroundColor = '#F0E6FA';
+            });
+        });
+
+    </script>
+</body>
+</html>
